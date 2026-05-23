@@ -1,0 +1,44 @@
+# ============================================================
+# requirements.txt
+# Prédiction du Rendement Agricole - Pipeline GPU RAPIDS cuML
+# ============================================================
+#
+# NOTE IMPORTANTE POUR GOOGLE COLAB :
+# ====================================
+# RAPIDS (cudf, cuml, cugraph, etc.) ne peut PAS être installé
+# via pip install classique sur Colab. Il faut utiliser le
+# script d'installation officiel rapidsai :
+#
+#   !git clone https://github.com/rapidsai/rapidsai-csp-utils.git
+#   !python rapidsai-csp-utils/colab/pip-install.py
+#
+# Cette commande installe automatiquement la bonne version de
+# RAPIDS selon la version CUDA détectée sur l'instance Colab.
+#
+# Pour un environnement LOCAL avec conda, utiliser environment.yml.
+# ============================================================
+
+# ── Data manipulation ──────────────────────────────────────
+pandas>=2.0.0
+numpy>=1.24.0
+
+# ── Machine Learning (CPU fallback) ───────────────────────
+scikit-learn>=1.3.0
+
+# ── GPU Acceleration ───────────────────────────────────────
+# cudf         → installé via rapidsai-csp-utils sur Colab
+# cuml         → installé via rapidsai-csp-utils sur Colab
+xgboost>=2.0.0          # XGBoost avec support GPU natif
+
+# ── Explicabilité ─────────────────────────────────────────
+shap>=0.45.0
+
+# ── Visualisation ─────────────────────────────────────────
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# ── Utilitaires ───────────────────────────────────────────
+requests>=2.31.0        # Téléchargement du dataset
+tqdm>=4.65.0            # Barres de progression
+ipykernel>=6.0.0        # Jupyter kernel
+ipywidgets>=8.0.0       # Widgets Jupyter
