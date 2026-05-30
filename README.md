@@ -7,7 +7,7 @@
 
 ## 📋 Description
 
-Pipeline ML complet pour prédire le **rendement des cultures agricoles** (hg/ha) à partir des **données historiques réelles de la FAO** (FAOSTAT). Le pipeline exploite l’accélération GPU via **RAPIDS cuML** pour entraîner trois modèles :
+Pipeline ML complet pour prédire le **rendement des cultures agricoles** (hg/ha) à partir des **données historiques de la FAO** (FAOSTAT). Le pipeline exploite l’accélération GPU via **RAPIDS cuML** pour entraîner trois modèles :
 
 - 🌲 **Random Forest** (cuML / scikit‑learn fallback)
 - ⚡ **XGBoost** (avec support GPU `device='cuda'`)
@@ -21,7 +21,7 @@ L’explicabilité est assurée par **SHAP** (SHapley Additive exPlanations) ave
 
 | Objectif | Détail |
 |----------|--------|
-| **Dataset** | FAOSTAT (Our World in Data / Hugging Face) – 28 000+ lignes (pays × cultures × années) |
+| **Dataset** | FAOSTAT (Kaggle : `vijayveersingh/faostat-crops-and-livestock-data`) – 28 000+ lignes |
 | **Cible** | Rendement en hg/ha (`yield_hg_ha`) |
 | **Métriques** | RMSE, R² (train & test) |
 | **GPU** | NVIDIA T4 / K80 (Google Colab gratuit) |
@@ -47,12 +47,27 @@ L’explicabilité est assurée par **SHAP** (SHapley Additive exPlanations) ave
 
 ---
 
+## 🔑 Authentification Kaggle (obligatoire pour le dataset réel)
+
+Le notebook télécharge automatiquement le jeu de données depuis Kaggle. Pour cela, **vous devez fournir votre clé d’API Kaggle** de l’une des deux manières suivantes :
+
+### Utiliser le fichier `access_token` (recommandé)
+1. Téléchargez votre fichier `access_token` depuis votre compte Kaggle (généré automatiquement).
+2. Lors de l’exécution de la **Cellule 4**, le notebook vous demandera de téléverser ce fichier.
+3. Saisissez votre **nom d’utilisateur Kaggle** si nécessaire.
+4. Le notebook configure automatiquement l’API Kaggle et télécharge le dataset.
+
+> 💡 **Sécurité** : votre clé n’est jamais exposée – elle est stockée temporairement dans l’environnement Colab et supprimée à la fin de la session.
+
+---
+
 ## 📦 Prérequis
 
 ### Environnement
 - Google Colab avec GPU activé (T4 ou K80)
 - Python 3.10+ (fourni par Colab)
 - Connexion Internet (pour télécharger RAPIDS, le dataset et les bibliothèques)
+- **Compte Kaggle** (gratuit) pour obtenir la clé d’API
 
 ### Bibliothèques installées automatiquement
 
@@ -64,6 +79,7 @@ L’explicabilité est assurée par **SHAP** (SHapley Additive exPlanations) ave
 | `matplotlib`, `seaborn` | ≥3.7, ≥0.12 | Visualisations |
 | `pandas`, `numpy` | ≥2.0, ≥1.24 | Manipulation CPU et calculs |
 | `scikit-learn` | ≥1.3 | Métriques, split, StandardScaler (fallback CPU) |
+| `kaggle`, `kagglehub` | - | Téléchargement du dataset (installées automatiquement) |
 
 > ℹ️ Sur Colab, RAPIDS s’installe via la méthode officielle `rapidsai/rapidsai-csp` qui gère automatiquement la version CUDA.
 
@@ -79,13 +95,13 @@ L’explicabilité est assurée par **SHAP** (SHapley Additive exPlanations) ave
 | **XGBoost (GPU)**   | **~13 500** | **~0.91** |
 | Régression Linéaire (cuML) | ~28 000 | ~0.65 |
 
-> Les valeurs exactes varient selon l’échantillon et la source du dataset (OWID / Hugging Face). XGBoost obtient systématiquement les meilleures performances.
+> Les valeurs exactes varient selon l’échantillon et la source du dataset. XGBoost obtient systématiquement les meilleures performances.
 
 ### Graphiques générés
 
 | Fichier | Description |
 |---------|-------------|
-| `eda_analysis.png` | Analyse exploratoire (distribution, corrélations, évolution temporelle) |
+| `eda_fao_real.png` | Analyse exploratoire (distribution, corrélations, évolution temporelle) |
 | `model_comparison.png` | Comparaison des modèles (RMSE, R², temps d’entraînement) |
 | `shap_<modele>.png` | SHAP summary plots (bar + dot) pour chaque modèle réussi |
 | `shap_waterfall.png` | Waterfall plot expliquant une prédiction individuelle |
@@ -102,14 +118,13 @@ agriculture-yield-gpu/
 ├── agriculture_yield_pipeline.ipynb # Notebook principal (tout-en-un)
 └── setup_colab.sh # Script d’installation optionnel
 
-
 ---
 
 ## 🔧 Fonctionnalités techniques (code robuste)
 
 ### Gestion des données
-- ✅ **Chargement du vrai dataset FAO** : priorité à Our World in Data (OWID) et Hugging Face.
-- ✅ **Fallback synthétique** : si toutes les sources réelles échouent, un dataset synthétique réaliste est généré.
+- ✅ **Chargement depuis Kaggle** : authentification via token (fichier `access_token` ou `kaggle.json`), téléchargement direct dans Colab.
+- ✅ **Fallback synthétique** : si l’API Kaggle échoue (problème de token ou de réseau), un dataset synthétique réaliste est généré.
 - ✅ **Prétraitement automatique** :
   - Suppression des lignes sans valeur cible
   - Imputation des NaN (médiane pour numériques, mode pour catégorielles)
@@ -141,7 +156,8 @@ agriculture-yield-gpu/
 1. **Redémarrage Colab** : L’installation de RAPIDS peut nécessiter un redémarrage du kernel. Le notebook détecte cela et vous guide.
 2. **Quota GPU Colab** : Le GPU gratuit est limité (~12h/jour). En cas d’expiration, relancez le notebook.
 3. **Version CUDA** : Le script d’installation détecte automatiquement la version CUDA de l’instance.
-4. **Dataset réel** : Si les URLs publiques changent, le notebook bascule automatiquement sur le dataset synthétique (robuste).
+4. **Dataset Kaggle** : La première exécution vous demandera de télécharger votre fichier `access_token` ou `kaggle.json`. Conservez‑le dans votre espace Colab le temps de la session.
+5. **Erreur de token** : Si le téléchargement échoue, le notebook bascule sur un dataset synthétique (pour que le projet reste fonctionnel).
 
 ---
 
@@ -149,7 +165,7 @@ agriculture-yield-gpu/
 
 - [RAPIDS Documentation](https://docs.rapids.ai/)
 - [FAO FAOSTAT – site officiel](https://www.fao.org/faostat/en/#data)
-- [Our World in Data – Crop Yields](https://ourworldindata.org/crop-yields)
+- [Kaggle Dataset utilisé](https://www.kaggle.com/datasets/vijayveersingh/faostat-crops-and-livestock-data)
 - [SHAP Documentation](https://shap.readthedocs.io/)
 - [XGBoost GPU Support](https://xgboost.readthedocs.io/en/stable/gpu/index.html)
 - [cuML User Guide](https://docs.rapids.ai/api/cuml/stable/)
